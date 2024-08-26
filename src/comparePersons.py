@@ -48,7 +48,7 @@ def writeTriples(filename, list1, list2):
 
             for element in itertools.product(list1, list2):
                 f.write(f" <{element[0]}> <http://www.w3.org/2002/07/owl#sameAs> <{element[1]}> .\n" )
-                f.write(f" <{element[1]}> <http://www.w3.org/2002/07/owl#sameAs> <{element[2]}> .\n" )
+                f.write(f" <{element[1]}> <http://www.w3.org/2002/07/owl#sameAs> <{element[0]}> .\n" )
 
 
 def fileLength(filename):
@@ -57,7 +57,7 @@ def fileLength(filename):
         return len(f.readlines())
     
 def writingCSV(filename, matching_terms):
-    with open(filaname, mode="w", encoding="utf-8", newline="") as output_file:
+    with open(filename, mode="w", encoding="utf-8", newline="") as output_file:
         fieldnames = ["Term in CSV", "Other Term in CSV", "Percentage Match", "Muziekschatten", "MuziekWeb"]
         writer = csv.DictWriter(output_file, fieldnames=fieldnames, delimiter= "|")
         writer.writeheader()
@@ -74,7 +74,7 @@ def writingCSV(filename, matching_terms):
             })
     
 ttl_LV_match = 'matchedPersonNameYearLV-combined.nt'
-ttl_name_match = 'matchedPersonCombined'
+ttl_name_match = 'matchedPersonCombined.nt'
 csv_LV_match = 'levenshteinMatchNameYear_combined.csv'
 
 person_muziekweb = readCsv('static/Muziekweb.csv')
@@ -86,11 +86,11 @@ print(f"Muziekschatten Iris: {len({item for values in person_muziekschatten.valu
 
 exactMatch = set()
 # Add exact matches for normalized names 
-for nameYear, values in person_muziekschatten.items():
-    if nameYear in person_muziekweb:
-        muziekwebIris = person_muziekweb[nameYear]['iri']
+for name, values in person_muziekschatten.items():
+    if name in person_muziekweb:
+        muziekwebIris = person_muziekweb[name]['iri']
         writeTriples(ttl_name_match,values['iri'], muziekwebIris)
-        exactMatch.add(nameYear)
+        exactMatch.add(name)
 
 print(f"The file {ttl_name_match} currently has  {fileLength(ttl_name_match)} triples")
 
@@ -105,7 +105,7 @@ for name1, values1 in  person_muziekschatten.items():
     if name1 not in exactMatch and len(values1['name'])>=8:
         for name2, values2 in person_muziekweb.items():
              if name2 not in exactMatch and len(values2['name'])>=8:
-                if values1['year'] == values2['year']:
+                if values1['year'] == values2['year'] and  values1['year'] != '' and values2['year']!= '':
                     distance = Levenshtein.distance(values1['name'] , values2['name'])
                     max_length = max(len(values1['name'] ), len(values2['name']))
                     percentage_match = (1 - distance / max_length) * 100
