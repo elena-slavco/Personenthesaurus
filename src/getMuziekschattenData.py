@@ -1,4 +1,3 @@
-import rdflib
 from rdflib import XSD, Graph, URIRef, Literal
 import urllib.parse
 import isodate
