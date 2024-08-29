@@ -100,28 +100,35 @@ async function fetchData() {
           })
           .on("end", () => {
             if (tempGraph.size === 0) {
-              // console.log("No more data, stopping pagination.");
+              console.info("No more data, stopping pagination.");
               shouldContinue = false;
             } else {
               graph.addQuads([...tempGraph.getQuads(null, null, null, null)]);
-              // console.log("Graph size:", graph.size);
+              console.info("Graph size:", graph.size);
             }
             resolve();
           });
       });
     } catch (error) {
       console.error("Error fetching data:", error);
+      shouldContinue = false;
     }
     offset += limit;
   } while (shouldContinue);
 
-  // console.log("Uploading graph to TriplyDB...");
-  await dataset.importFromStore(graph, {
-    defaultGraphName:
-      "https://podiumkunst.triply.cc/Personenthesaurus/Combined-approach/graphs/muziekschatten/",
-    overwriteAll: true,
-  });
-  // console.log("Done uploading graph to TriplyDB");
+  try {
+    console.info("Uploading graph to TriplyDB...");
+    await dataset.importFromStore(graph, {
+      defaultGraphName:
+        "https://podiumkunst.triply.cc/Personenthesaurus/Combined-approach/graphs/muziekschatten/",
+      overwriteAll: true,
+    });
+    console.info("Done uploading graph to TriplyDB");
+  } catch (uploadError) {
+    console.error("Error uploading graph to TriplyDB:", uploadError);
+  }
 }
 
-fetchData();
+fetchData().catch((error) => {
+  console.error("Error in fetchData:", error);
+});
