@@ -1,14 +1,13 @@
-import { Store, Writer } from "n3";
+import { Store } from "n3";
 import App from "@triply/triplydb";
 import Dataset from "@triply/triplydb/Dataset.js";
 import dotenv from "dotenv";
 import { RdfXmlParser } from "rdfxml-streaming-parser";
 import { Readable } from "stream";
-import fs from "fs/promises";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://data.muziekschatten.nl/sparql";
-const datasetName = "muziekschatten";
+const datasetName = "Personenthesaurus";
 
 // Define the SPARQL query
 const sparqlQuery = `
@@ -44,7 +43,7 @@ const graph = new Store();
 async function fetchData() {
   dotenv.config();
   const triply = App.get({ token: process.env.TRIPLYDB_TOKEN });
-  const account = await triply.getAccount();
+  const account = await triply.getAccount('Personenthesaurus');
 
   let dataset: Dataset;
   try {
@@ -120,7 +119,7 @@ async function fetchData() {
     console.info("Uploading graph to TriplyDB...");
     await dataset.importFromStore(graph, {
       defaultGraphName:
-        "https://podiumkunst.triply.cc/Personenthesaurus/Combined-approach/graphs/muziekschatten/",
+        "https://podiumkunst.triply.cc/Personenthesaurus/Personenthesaurus/graphs/muziekschatten",
       overwriteAll: true,
     });
     console.info("Done uploading graph to TriplyDB");
