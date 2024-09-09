@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://api.data.muziekweb.nl/datasets/MuziekwebOrganization/Muziekweb/services/Muziekweb/sparql";
-const datasetName = "Personenthesaurus-Basis";
+const datasetName = "Personenthesaurus";
 
 // Define the SPARQL query
 const sparqlQuery = `
