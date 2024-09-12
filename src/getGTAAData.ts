@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://gtaa.apis.beeldengeluid.nl/sparql";
-const datasetName = "Personenthesaurus";
+const datasetName = "Construct-Personenthesaurus";
 
 // Define the SPARQL query
 const sparqlQuery = `
@@ -49,10 +49,15 @@ async function fetchData() {
   do {
     const paginatedQuery = `${sparqlQuery} LIMIT ${limit} OFFSET ${offset}`;
     const encodedQuery = encodeURIComponent(paginatedQuery);
-    const queryUrl = `${endpointUrl}?query=${encodedQuery}&format=text/turtle`;  // Adjusted format to Turtle
+    const queryUrl = `${endpointUrl}?query=${encodedQuery}`;
 
     try {
-      const response = await fetch(queryUrl);
+      // Set Accept header for Turtle format
+      const response = await fetch(queryUrl, {
+        headers: {
+          'Accept': 'text/turtle'  // Specify Turtle format via Accept header
+        }
+      });
 
       // Ensure the response is OK (status code 200)
       if (!response.ok) {
