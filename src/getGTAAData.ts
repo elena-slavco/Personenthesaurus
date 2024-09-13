@@ -15,11 +15,13 @@ prefix sdo: <http://schema.org/>
 
 construct {
   ?person a sdo:Person ;
-          skos:prefLabel ?originalName .
+          skos:prefLabel ?originalName ;
+          skos:exactMatch ?exactMatch .
 }
   where {
     ?person skos:inScheme gtaa:Persoonsnamen ;
-            skos:prefLabel ?originalName .
+            skos:prefLabel ?originalName ;
+            skos:exactMatch ?exactMatch .
   }
 `;
 
@@ -55,7 +57,7 @@ async function fetchData() {
       // Set Accept header for Turtle format
       const response = await fetch(queryUrl, {
         headers: {
-          'Accept': 'text/turtle'  // Specify Turtle format via Accept header
+          'Accept': 'application/n-triples'  // Specify format via Accept header
         }
       });
 
