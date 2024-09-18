@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://gtaa.apis.beeldengeluid.nl/sparql";
-const datasetName = "Construct-Personenthesaurus";
+const datasetName = "Construct-Thesaurus";
 
 // Define the SPARQL query
 const sparqlQuery = `

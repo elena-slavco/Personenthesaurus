@@ -7,7 +7,7 @@ import { Readable } from "stream";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://data.muziekschatten.nl/sparql";
-const datasetName = "Construct-Personenthesaurus";
+const datasetName = "Construct-Thesaurus";
 
 // Define the SPARQL query
 const sparqlQuery = `
@@ -16,20 +16,25 @@ prefix schema: <http://schema.org/>
 prefix som: <https://data.muziekschatten.nl/som/>
 
 construct {
-  ?person a schema:Person.
+  ?person a schema:Person .
+  ?person som:ZKNMFZ ?rol .
+  ?person schema:name ?name .
+  ?person schema:birthDate ?birthDate .
+  ?person schema:deathDate ?deathDate .
+  ?person som:GDAT ?birthYear .
+  ?person som:SDAT ?deathYear .
+  ?person schema:alternateName ?alternateName .
   ?person owl:sameAs ?link .
-  ?person schema:birthDate ?birthDate.
-  ?person som:GDAT ?birthYear.
-  ?person schema:name ?name.
-  ?person schema:alternateName ?alternateName.
   } where {
   ?person a schema:Person;
-    som:ZKNMFZ [] ;
-    schema:name ?name.
+    som:ZKNMFZ ?rol ;
+    schema:name ?name .
     optional { ?person schema:birthDate ?birthDate }
+    optional { ?person schema:deathDate ?deathDate }
     optional { ?person som:GDAT ?birthYear }
+    optional { ?person som:SDAT ?deathYear }
     optional { ?person schema:alternateName ?alternateName }
-    optional { ?person owl:sameAs ?link}
+    optional { ?person owl:sameAs ?link }
 }
 `;
 
