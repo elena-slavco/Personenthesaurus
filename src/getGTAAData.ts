@@ -109,7 +109,7 @@ async function fetchData() {
     console.info("Uploading graph to TriplyDB...");
     await dataset.importFromStore(graph, {
       defaultGraphName:
-        "https://podiumkunst.triply.cc/Personenthesaurus/Personenthesaurus/graphs/gtaa",
+        "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/gtaa",
       overwriteAll: true,
     });
     console.info("Done uploading graph to TriplyDB");
