@@ -6,7 +6,9 @@ const graphs =
   "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/";
 const verrijkingGraphName = graphs + "verrijkingen";
 const relatiesGraphName = graphs + "relaties";
-const coreGraphName = graphs + "core";
+const coreGraphName = graphs + "thesaurus-core";
+const remainingGraphName = graphs + "thesaurus-remaining";
+const thesaurusVerrijkingGraphName = graphs + "thesaurus-verrijking";
 
 dotenv.config();
 const triply = App.get({ token: process.env.TRIPLYDB_TOKEN });
@@ -47,16 +49,33 @@ async function runPipelines(): Promise<void> {
   const thesaurusDataset = await account.getDataset("Thesaurus");
 
   // Get the queries
-  const wikidata = await account.getQuery("muziekweb-wikidata-fix");
-  const ptcallSigns = await account.getQuery("pt-callSigns");
-  const ptRelations = await account.getQuery("pt-relations");
-  const thesaurusCore = await account.getQuery("thesaurus-core");
+  const wikidata = await (
+    await account.getQuery("muziekweb-wikidata-fix")
+  ).useVersion("latest");
+  const ptcallSigns = await (
+    await account.getQuery("pt-callSigns")
+  ).useVersion("latest");
+  const ptRelations = await (
+    await account.getQuery("pt-relations")
+  ).useVersion(10); // also try version 17
+  const thesaurusCore = await (
+    await account.getQuery("thesaurus-core")
+  ).useVersion(6); // also try version 20
+  const thesaurusRemaining = await (
+    await account.getQuery("thesaurus-remaining")
+  ).useVersion("latest");
+  const thesaurusVerrijking = await (
+    await account.getQuery("thesaurus-verrijking")
+  ).useVersion("latest");
 
   console.info("Delete existing graphs");
   await deleteGraph(constructThesaurusDataset, verrijkingGraphName);
   await deleteGraph(constructThesaurusDataset, relatiesGraphName);
   await deleteGraph(constructThesaurusDataset, coreGraphName);
+  await deleteGraph(constructThesaurusDataset, remainingGraphName);
   await deleteGraph(thesaurusDataset, coreGraphName);
+  await deleteGraph(thesaurusDataset, remainingGraphName);
+  await deleteGraph(thesaurusDataset, thesaurusVerrijkingGraphName);
 
   console.info("Verrijkingen: muziekweb-wikidata-fix, pt-callSigns");
   await runPipeline(
@@ -74,15 +93,35 @@ async function runPipelines(): Promise<void> {
     relatiesGraphName,
   );
 
-  console.info("Thesaurus Core => Thesaurus");
+  console.info("Thesaurus Core => Thesaurus && Construct Thesaurus");
   await runPipeline(account, [thesaurusCore], thesaurusDataset, coreGraphName);
-
-  console.info("Thesaurus Core => Construct Thesaurus");
   await runPipeline(
     account,
     [thesaurusCore],
     constructThesaurusDataset,
     coreGraphName,
+  );
+
+  console.info("Thesaurus Remaining => Thesaurus && Construct Thesaurus");
+  await runPipeline(
+    account,
+    [thesaurusRemaining],
+    thesaurusDataset,
+    remainingGraphName,
+  );
+  await runPipeline(
+    account,
+    [thesaurusRemaining],
+    constructThesaurusDataset,
+    remainingGraphName,
+  );
+
+  console.info("Thesaurus Verrijking => Thesaurus");
+  await runPipeline(
+    account,
+    [thesaurusVerrijking],
+    thesaurusDataset,
+    thesaurusVerrijkingGraphName,
   );
 }
 
