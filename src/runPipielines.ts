@@ -1,7 +1,11 @@
 import App from "@triply/triplydb";
+import Dataset from "@triply/triplydb/Dataset.js";
 import dotenv from "dotenv";
 
 // Define constants
+const constructThesaurusDatasetName = "Construct-Thesaurus";
+const thesaurusDatasetName = "Thesaurus";
+
 const graphs =
   "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/";
 const verrijkingGraphName = graphs + "verrijkingen";
@@ -43,10 +47,32 @@ async function runPipelines(): Promise<void> {
   const account = await triply.getAccount("Personenthesaurus");
 
   // Get the datasets
-  const constructThesaurusDataset = await account.getDataset(
-    "Construct-Thesaurus",
-  );
-  const thesaurusDataset = await account.getDataset("Thesaurus");
+
+  let constructThesaurusDataset: Dataset;
+  try {
+    constructThesaurusDataset = await account.getDataset(
+      constructThesaurusDatasetName,
+    );
+  } catch (error) {
+    constructThesaurusDataset = await account.addDataset(
+      constructThesaurusDatasetName,
+    );
+  }
+  if (!constructThesaurusDataset)
+    throw new Error(
+      `Kon de dataset ${constructThesaurusDatasetName} niet aanmaken in TriplyDB`,
+    );
+
+  let thesaurusDataset: Dataset;
+  try {
+    thesaurusDataset = await account.getDataset(thesaurusDatasetName);
+  } catch (error) {
+    thesaurusDataset = await account.addDataset(thesaurusDatasetName);
+  }
+  if (!thesaurusDataset)
+    throw new Error(
+      `Kon de dataset ${thesaurusDatasetName} niet aanmaken in TriplyDB`,
+    );
 
   // Get the queries
   const wikidata = await (
@@ -57,10 +83,10 @@ async function runPipelines(): Promise<void> {
   ).useVersion("latest");
   const ptRelations = await (
     await account.getQuery("pt-relations")
-  ).useVersion(10); // also try version 17
+  ).useVersion(17);
   const thesaurusCore = await (
     await account.getQuery("thesaurus-core")
-  ).useVersion(6); // also try version 20
+  ).useVersion(20);
   const thesaurusRemaining = await (
     await account.getQuery("thesaurus-remaining")
   ).useVersion("latest");
