@@ -3,6 +3,8 @@ import Dataset from "@triply/triplydb/Dataset.js";
 import dotenv from "dotenv";
 
 // Define constants
+const accoutName = "Personenthesaurus-Acceptatie";
+const personenthesaurusAccountName = "Personenthesaurus";
 const constructThesaurusDatasetName = "Construct-Thesaurus";
 const thesaurusDatasetName = "Thesaurus";
 
@@ -27,16 +29,18 @@ async function deleteGraph(dataset: any, graphName: string): Promise<void> {
 async function runPipeline(
   account: any,
   queries: any[],
-  dataset: any,
+  sourceDataSet: any,
+  destinationDataSet: any,
   graphName: string,
 ): Promise<void> {
   try {
     await account.runPipeline({
       queries: queries,
       destination: {
-        dataset: dataset,
+        dataset: destinationDataSet,
         graph: graphName,
       },
+      source: sourceDataSet,
     });
   } catch (error) {
     console.error(`Error running pipeline for graph ${graphName}:`, error);
@@ -44,10 +48,12 @@ async function runPipeline(
 }
 
 async function runPipelines(): Promise<void> {
-  const account = await triply.getAccount("Personenthesaurus");
+  const account = await triply.getAccount(accoutName);
+  const personenthesaurusAccount = await triply.getAccount(
+    personenthesaurusAccountName,
+  );
 
   // Get the datasets
-
   let constructThesaurusDataset: Dataset;
   try {
     constructThesaurusDataset = await account.getDataset(
@@ -76,22 +82,22 @@ async function runPipelines(): Promise<void> {
 
   // Get the queries
   const wikidata = await (
-    await account.getQuery("muziekweb-wikidata-fix")
+    await personenthesaurusAccount.getQuery("muziekweb-wikidata-fix")
   ).useVersion("latest");
   const ptcallSigns = await (
-    await account.getQuery("pt-callSigns")
+    await personenthesaurusAccount.getQuery("pt-callSigns")
   ).useVersion("latest");
   const ptRelations = await (
-    await account.getQuery("pt-relations")
+    await personenthesaurusAccount.getQuery("pt-relations")
   ).useVersion(17);
   const thesaurusCore = await (
-    await account.getQuery("thesaurus-core")
+    await personenthesaurusAccount.getQuery("thesaurus-core")
   ).useVersion(20);
   const thesaurusRemaining = await (
-    await account.getQuery("thesaurus-remaining")
+    await personenthesaurusAccount.getQuery("thesaurus-remaining")
   ).useVersion("latest");
   const thesaurusVerrijking = await (
-    await account.getQuery("thesaurus-verrijking")
+    await personenthesaurusAccount.getQuery("thesaurus-verrijking")
   ).useVersion("latest");
 
   console.info("Delete existing graphs");
@@ -108,6 +114,7 @@ async function runPipelines(): Promise<void> {
     account,
     [wikidata, ptcallSigns],
     constructThesaurusDataset,
+    constructThesaurusDataset,
     verrijkingGraphName,
   );
 
@@ -116,14 +123,22 @@ async function runPipelines(): Promise<void> {
     account,
     [ptRelations],
     constructThesaurusDataset,
+    constructThesaurusDataset,
     relatiesGraphName,
   );
 
   console.info("Thesaurus Core => Thesaurus && Construct Thesaurus");
-  await runPipeline(account, [thesaurusCore], thesaurusDataset, coreGraphName);
   await runPipeline(
     account,
     [thesaurusCore],
+    constructThesaurusDataset,
+    thesaurusDataset,
+    coreGraphName,
+  );
+  await runPipeline(
+    account,
+    [thesaurusCore],
+    constructThesaurusDataset,
     constructThesaurusDataset,
     coreGraphName,
   );
@@ -132,12 +147,14 @@ async function runPipelines(): Promise<void> {
   await runPipeline(
     account,
     [thesaurusRemaining],
+    constructThesaurusDataset,
     thesaurusDataset,
     remainingGraphName,
   );
   await runPipeline(
     account,
     [thesaurusRemaining],
+    constructThesaurusDataset,
     constructThesaurusDataset,
     remainingGraphName,
   );
@@ -146,6 +163,7 @@ async function runPipelines(): Promise<void> {
   await runPipeline(
     account,
     [thesaurusVerrijking],
+    constructThesaurusDataset,
     thesaurusDataset,
     thesaurusVerrijkingGraphName,
   );
