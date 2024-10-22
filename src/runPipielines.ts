@@ -3,7 +3,7 @@ import Dataset from "@triply/triplydb/Dataset.js";
 import dotenv from "dotenv";
 
 // Define constants
-const accoutName = "kathrin-dentler";
+const accoutName = "Personenthesaurus";
 const personenthesaurusAccountName = "Personenthesaurus";
 const constructThesaurusDatasetName = "Construct-Thesaurus";
 const thesaurusDatasetName = "Thesaurus";
@@ -89,34 +89,34 @@ async function runPipelines(): Promise<void> {
   ).useVersion("latest");
   const ptRelations = await (
     await personenthesaurusAccount.getQuery("pt-relations")
-  ).useVersion("latest"); // 17 werkt
+  ).useVersion(17);
   const thesaurusCore = await (
     await personenthesaurusAccount.getQuery("thesaurus-core")
-  ).useVersion("latest"); // 20 werkt
+  ).useVersion(20);
   const thesaurusRemaining = await (
     await personenthesaurusAccount.getQuery("thesaurus-remaining")
-  ).useVersion("latest");
+  ).useVersion(52);
   const thesaurusVerrijking = await (
     await personenthesaurusAccount.getQuery("thesaurus-verrijking")
   ).useVersion("latest");
 
   console.info("Delete existing graphs");
-  // await deleteGraph(constructThesaurusDataset, verrijkingGraphName);
+  await deleteGraph(constructThesaurusDataset, verrijkingGraphName);
   await deleteGraph(constructThesaurusDataset, relatiesGraphName);
   await deleteGraph(constructThesaurusDataset, coreGraphName);
-  await deleteGraph(constructThesaurusDataset, remainingGraphName);
   await deleteGraph(thesaurusDataset, coreGraphName);
+  await deleteGraph(constructThesaurusDataset, remainingGraphName);
   await deleteGraph(thesaurusDataset, remainingGraphName);
   await deleteGraph(thesaurusDataset, thesaurusVerrijkingGraphName);
 
-  // console.info("Verrijkingen: muziekweb-wikidata-fix, pt-callSigns");
-  // await runPipeline(
-  //   account,
-  //   [wikidata, ptcallSigns],
-  //   constructThesaurusDataset,
-  //   constructThesaurusDataset,
-  //   verrijkingGraphName
-  // );
+  console.info("Verrijkingen: muziekweb-wikidata-fix, pt-callSigns");
+  await runPipeline(
+    account,
+    [wikidata, ptcallSigns],
+    constructThesaurusDataset,
+    constructThesaurusDataset,
+    verrijkingGraphName,
+  );
 
   console.info("Relaties: pt-relations");
   await runPipeline(
@@ -159,14 +159,14 @@ async function runPipelines(): Promise<void> {
     remainingGraphName,
   );
 
-  // console.info("Thesaurus Verrijking => Thesaurus");
-  // await runPipeline(
-  //   account,
-  //   [thesaurusVerrijking],
-  //   constructThesaurusDataset,
-  //   thesaurusDataset,
-  //   thesaurusVerrijkingGraphName
-  // );
+  console.info("Thesaurus Verrijking => Thesaurus");
+  await runPipeline(
+    account,
+    [thesaurusVerrijking],
+    constructThesaurusDataset,
+    thesaurusDataset,
+    thesaurusVerrijkingGraphName,
+  );
 }
 
 // Call the runPipelines function to start the process

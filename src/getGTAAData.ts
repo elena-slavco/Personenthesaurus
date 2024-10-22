@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://gtaa.apis.beeldengeluid.nl/sparql";
+const accountName = "Personenthesaurus";
 const datasetName = "Construct-Thesaurus";
 
 // Define the SPARQL query
@@ -35,7 +36,7 @@ const graph = new Store();
 async function fetchData() {
   dotenv.config();
   const triply = App.get({ token: process.env.TRIPLYDB_TOKEN });
-  const account = await triply.getAccount('Personenthesaurus');
+  const account = await triply.getAccount(accountName);
 
   let dataset: Dataset;
   try {
@@ -57,8 +58,8 @@ async function fetchData() {
       // Set Accept header for Turtle format
       const response = await fetch(queryUrl, {
         headers: {
-          'Accept': 'application/n-triples'  // Specify format via Accept header
-        }
+          Accept: "application/n-triples", // Specify format via Accept header
+        },
       });
 
       // Ensure the response is OK (status code 200)
@@ -70,7 +71,7 @@ async function fetchData() {
       const responseData = await response.text();
 
       // Parse RDF data (assuming Turtle format)
-      const parser = new Parser({ format: "Turtle" });  // Adjusted format to Turtle
+      const parser = new Parser({ format: "Turtle" }); // Adjusted format to Turtle
       const tempGraph = new Store();
 
       await new Promise<void>((resolve, reject) => {

@@ -7,6 +7,7 @@ import { Readable } from "stream";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://data.muziekschatten.nl/sparql";
+const accountName = "Personenthesaurus";
 const datasetName = "Construct-Thesaurus";
 
 // Define the SPARQL query
@@ -48,7 +49,7 @@ const graph = new Store();
 async function fetchData() {
   dotenv.config();
   const triply = App.get({ token: process.env.TRIPLYDB_TOKEN });
-  const account = await triply.getAccount('Personenthesaurus');
+  const account = await triply.getAccount(accountName);
 
   let dataset: Dataset;
   try {
@@ -70,8 +71,8 @@ async function fetchData() {
       // Set Accept header for RDF/XML format
       const response = await fetch(queryUrl, {
         headers: {
-          'Accept': 'application/rdf+xml'  // Specify RDF/XML format via Accept header
-        }
+          Accept: "application/rdf+xml", // Specify RDF/XML format via Accept header
+        },
       });
 
       // Ensure the response is OK (status code 200)

@@ -4,7 +4,9 @@ import Dataset from "@triply/triplydb/Dataset.js";
 import dotenv from "dotenv";
 
 // Define the SPARQL endpoint and datasetName
-const endpointUrl = "https://api.data.muziekweb.nl/datasets/MuziekwebOrganization/Muziekweb/services/Muziekweb/sparql";
+const endpointUrl =
+  "https://api.data.muziekweb.nl/datasets/MuziekwebOrganization/Muziekweb/services/Muziekweb/sparql";
+const accountName = "Personenthesaurus";
 const datasetName = "Construct-Thesaurus";
 
 // Define the SPARQL query
@@ -52,7 +54,7 @@ const graph = new Store();
 async function fetchData() {
   dotenv.config();
   const triply = App.get({ token: process.env.TRIPLYDB_TOKEN });
-  const account = await triply.getAccount('Personenthesaurus');
+  const account = await triply.getAccount(accountName);
 
   let dataset: Dataset;
   try {
@@ -74,8 +76,8 @@ async function fetchData() {
       // Set Accept header for the desired format
       const response = await fetch(queryUrl, {
         headers: {
-          'Accept': 'application/n-triples'  // Specify desired format via Accept header
-        }
+          Accept: "application/n-triples", // Specify desired format via Accept header
+        },
       });
 
       // Ensure the response is OK (status code 200)
