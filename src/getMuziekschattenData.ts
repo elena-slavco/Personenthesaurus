@@ -7,7 +7,7 @@ import { Readable } from "stream";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://data.muziekschatten.nl/sparql";
-const accountName = "Personenthesaurus";
+const accountName = "PT";
 const datasetName = "Construct-Thesaurus";
 
 // Define the SPARQL query
@@ -40,7 +40,7 @@ construct {
 `;
 
 // Variables for pagination
-const limit = 1000;
+const limit = 10000;
 let offset = 0;
 
 const graph = new Store();

@@ -4,33 +4,50 @@ import Dataset from "@triply/triplydb/Dataset.js";
 import dotenv from "dotenv";
 
 // Define the SPARQL endpoint and datasetName
-const endpointUrl = "https://gtaa.apis.beeldengeluid.nl/sparql";
+const endpointUrl = "https://data.bibliotheken.nl/sparql";
 const accountName = "PT";
 const datasetName = "Construct-Thesaurus";
 
 // Define the SPARQL query
 const sparqlQuery = `
-prefix gtaa: <http://data.beeldengeluid.nl/gtaa/>
-prefix skos: <http://www.w3.org/2004/02/skos/core#>
-prefix sdo: <http://schema.org/>
+prefix kb-dataset: <http://data.bibliotheken.nl/id/dataset/> 
+prefix owl: <http://www.w3.org/2002/07/owl#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix schema: <http://schema.org/>
 
 construct {
-  ?person a sdo:Person ;
-          skos:prefLabel ?originalName ;
-          skos:exactMatch ?exactMatch .
-}
-  where {
-    ?person skos:inScheme gtaa:Persoonsnamen ;
-            skos:prefLabel ?originalName ;
-            skos:exactMatch ?exactMatch .
+  ?person a schema:Person ;
+    schema:name ?name ;
+    rdfs:label ?name ;
+    schema:birthDate ?birthDate ;
+    schema:deathDate ?deathDate ;
+    schema:alternateName ?alternateName ;
+     owl:sameAs ?link .
+  } where {
+  ?creativeWork a schema:CreativeWork ;
+    ?relation ?person .
+  # ?creativeWork rdfs:label ?label . # het label van een CreativeWork bestaat uit titel / verantwoordelijkheidsvermelding
+  graph <http://data.bibliotheken.nl/persons/2023-r02/> {
+    ?person schema:mainEntityOfPage/schema:isPartOf kb-dataset:persons ; # NTA 
+      schema:name ?name .
+    ?person rdfs:label ?label_person_NTA .
+    optional { ?person schema:birthDate ?birthDate }
+    optional { ?person schema:deathDate ?deathDate }
+    optional { ?person schema:alternateName ?alternateName }
+    optional { ?person owl:sameAs ?link }
   }
+}
 `;
 
 // Variables for pagination
 const limit = 10000;
 let offset = 0;
 
-const graph = new Store();
+let graph = new Store();
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 // Loop to fetch all results using pagination
 async function fetchData() {
@@ -55,10 +72,10 @@ async function fetchData() {
     const queryUrl = `${endpointUrl}?query=${encodedQuery}`;
 
     try {
-      // Set Accept header for Turtle format
+      // Set Accept header for the desired format
       const response = await fetch(queryUrl, {
         headers: {
-          Accept: "application/n-triples", // Specify format via Accept header
+          Accept: "application/n-triples", // Specify desired format via Accept header
         },
       });
 
@@ -70,8 +87,8 @@ async function fetchData() {
       // Get the response as text
       const responseData = await response.text();
 
-      // Parse RDF data (assuming Turtle format)
-      const parser = new Parser({ format: "Turtle" }); // Adjusted format to Turtle
+      // Parse RDF data (assuming N-Triples format)
+      const parser = new Parser({ format: "N-Triples" });
       const tempGraph = new Store();
 
       await new Promise<void>((resolve, reject) => {
@@ -99,24 +116,30 @@ async function fetchData() {
         });
       });
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching data: ", error);
+      console.error("Last offset: ", offset);
       shouldContinue = false;
     }
 
+    if (shouldContinue) {
+      try {
+        console.info("Uploading graph to TriplyDB...");
+        await dataset.importFromStore(graph, {
+          defaultGraphName:
+            "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/nta",
+          mergeGraphs: true,
+        });
+        // Clear the graph after uploading
+        graph = new Store();
+        console.info("Done uploading graph to TriplyDB");
+      } catch (uploadError) {
+        console.error("Error uploading graph to TriplyDB:", uploadError);
+      }
+    }
+
+    // await sleep(2000); // sleep to work around endpoint performance
     offset += limit; // Move to the next page
   } while (shouldContinue);
-
-  try {
-    console.info("Uploading graph to TriplyDB...");
-    await dataset.importFromStore(graph, {
-      defaultGraphName:
-        "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/gtaa",
-      overwriteAll: true,
-    });
-    console.info("Done uploading graph to TriplyDB");
-  } catch (uploadError) {
-    console.error("Error uploading graph to TriplyDB:", uploadError);
-  }
 }
 
 // Call the fetchData function to start the process

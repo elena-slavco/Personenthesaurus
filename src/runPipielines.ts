@@ -3,8 +3,8 @@ import Dataset from "@triply/triplydb/Dataset.js";
 import dotenv from "dotenv";
 
 // Define constants
-const accoutName = "Personenthesaurus";
-const personenthesaurusAccountName = "Personenthesaurus";
+const accoutName = "PT";
+const personenthesaurusAccountName = "PT";
 const constructThesaurusDatasetName = "Construct-Thesaurus";
 const thesaurusDatasetName = "Thesaurus";
 
