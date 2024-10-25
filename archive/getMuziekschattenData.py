@@ -55,7 +55,7 @@ def safe_literal(obj):
 
 # Variables for pagination
 ttl_file_path = 'testdata.ttl'
-limit = 1000
+limit = 10000
 offset = 0
 all_results = []
 
