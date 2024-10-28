@@ -20,25 +20,21 @@ construct {
     schema:name ?name ;
     schema:birthDate ?birthDate, ?birthdate_DBNL ;
     schema:deathDate ?deathDate ;
-    schema:alternateName ?alternateName ;
-     owl:sameAs ?link .
+    schema:alternateName ?alternateName .
   } where {
-  graph <http://data.bibliotheken.nl/persons/2023-r02/> {
-    ?person schema:mainEntityOfPage/schema:isPartOf kb-dataset:persons ;
-      schema:name ?name .
-    optional { ?person schema:birthDate ?birthDate }
-    optional { ?person schema:deathDate ?deathDate }
-    optional { ?person schema:alternateName ?alternateName }
-    optional { ?person owl:sameAs ?link }
-  }
+  ?person schema:mainEntityOfPage/schema:isPartOf kb-dataset:persons ;
+    schema:name ?name .
+  optional { ?person schema:birthDate ?birthDate }
+  optional { ?person schema:deathDate ?deathDate }
+  optional { ?person schema:alternateName ?alternateName }
   filter exists {
     ?creativeWork a schema:CreativeWork ;
     ?relation ?person
   }
   optional {
     ?dbnlaperson owl:sameAs ?person ;
-    schema:mainEntityOfPage/schema:isPartOf kb-dataset:dbnla ;
-    schema:birthDate ?birthdate_DBNL .
+      schema:mainEntityOfPage/schema:isPartOf kb-dataset:dbnla ;
+      schema:birthDate ?birthdate_DBNL .
   }
   # Ensure that at least one date is bound
   filter(bound(?birthDate) || bound(?birthdate_DBNL))
@@ -115,7 +111,7 @@ async function fetchData() {
                 await dataset.importFromStore(tempGraph, {
                   defaultGraphName:
                     "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/kb",
-                  overwriteAll: true,
+                  mergeGraphs: true,
                 });
                 console.info("Done uploading graph to TriplyDB");
               } catch (uploadError) {
