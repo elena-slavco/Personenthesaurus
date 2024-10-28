@@ -3,7 +3,7 @@ import Dataset from "@triply/triplydb/Dataset.js";
 import dotenv from "dotenv";
 
 // Define constants
-const accoutName = "PT";
+const accountName = "PT";
 const personenthesaurusAccountName = "PT";
 const constructThesaurusDatasetName = "Construct-Thesaurus";
 const thesaurusDatasetName = "Thesaurus";
@@ -48,7 +48,7 @@ async function runPipeline(
 }
 
 async function runPipelines(): Promise<void> {
-  const account = await triply.getAccount(accoutName);
+  const account = await triply.getAccount(accountName);
   const personenthesaurusAccount = await triply.getAccount(
     personenthesaurusAccountName,
   );
