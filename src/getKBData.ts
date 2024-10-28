@@ -18,36 +18,36 @@ prefix schema: <http://schema.org/>
 construct {
   ?person a schema:Person ;
     schema:name ?name ;
-    rdfs:label ?name ;
-    schema:birthDate ?birthDate ;
+    schema:birthDate ?birthDate, ?birthdate_DBNL ;
     schema:deathDate ?deathDate ;
     schema:alternateName ?alternateName ;
      owl:sameAs ?link .
   } where {
-  ?creativeWork a schema:CreativeWork ;
-    ?relation ?person .
-  # ?creativeWork rdfs:label ?label . # het label van een CreativeWork bestaat uit titel / verantwoordelijkheidsvermelding
   graph <http://data.bibliotheken.nl/persons/2023-r02/> {
-    ?person schema:mainEntityOfPage/schema:isPartOf kb-dataset:persons ; # NTA 
+    ?person schema:mainEntityOfPage/schema:isPartOf kb-dataset:persons ;
       schema:name ?name .
-    ?person rdfs:label ?label_person_NTA .
     optional { ?person schema:birthDate ?birthDate }
     optional { ?person schema:deathDate ?deathDate }
     optional { ?person schema:alternateName ?alternateName }
     optional { ?person owl:sameAs ?link }
   }
+  filter exists {
+    ?creativeWork a schema:CreativeWork ;
+    ?relation ?person
+  }
+  optional {
+    ?dbnlaperson owl:sameAs ?person ;
+    schema:mainEntityOfPage/schema:isPartOf kb-dataset:dbnla ;
+    schema:birthDate ?birthdate_DBNL .
+  }
+  # Ensure that at least one date is bound
+  filter(bound(?birthDate) || bound(?birthdate_DBNL))
 }
 `;
 
 // Variables for pagination
 const limit = 10000;
 let offset = 0;
-
-let graph = new Store();
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 // Loop to fetch all results using pagination
 async function fetchData() {
@@ -92,7 +92,7 @@ async function fetchData() {
       const tempGraph = new Store();
 
       await new Promise<void>((resolve, reject) => {
-        parser.parse(responseData, (error, quad, prefixes) => {
+        parser.parse(responseData, async (error, quad, prefixes) => {
           if (error) {
             console.error("Error parsing quad:", error);
             reject(error);
@@ -108,36 +108,32 @@ async function fetchData() {
               console.info("No more data, stopping pagination.");
               shouldContinue = false;
             } else {
-              graph.addQuads([...tempGraph.getQuads(null, null, null, null)]);
-              console.info("Graph size:", graph.size);
+              // graph.addQuads([...tempGraph.getQuads(null, null, null, null)]);
+              console.info("Graph size:", tempGraph.size);
+              try {
+                console.info("Uploading graph to TriplyDB...");
+                await dataset.importFromStore(tempGraph, {
+                  defaultGraphName:
+                    "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/kb",
+                  overwriteAll: true,
+                });
+                console.info("Done uploading graph to TriplyDB");
+              } catch (uploadError) {
+                console.error(
+                  "Error uploading graph to TriplyDB:",
+                  uploadError,
+                );
+              }
             }
             resolve();
           }
         });
       });
     } catch (error) {
-      console.error("Error fetching data: ", error);
-      console.error("Last offset: ", offset);
+      console.error("Error fetching data:", error, "Failing offset:", offset);
       shouldContinue = false;
     }
 
-    if (shouldContinue) {
-      try {
-        console.info("Uploading graph to TriplyDB...");
-        await dataset.importFromStore(graph, {
-          defaultGraphName:
-            "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/nta",
-          mergeGraphs: true,
-        });
-        // Clear the graph after uploading
-        graph = new Store();
-        console.info("Done uploading graph to TriplyDB");
-      } catch (uploadError) {
-        console.error("Error uploading graph to TriplyDB:", uploadError);
-      }
-    }
-
-    // await sleep(2000); // sleep to work around endpoint performance
     offset += limit; // Move to the next page
   } while (shouldContinue);
 }
