@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 
 // Define constants
 const accountName = "PT";
-const personenthesaurusAccountName = "PT";
 const constructThesaurusDatasetName = "Construct-Thesaurus";
 const thesaurusDatasetName = "Thesaurus";
 
@@ -49,9 +48,6 @@ async function runPipeline(
 
 async function runPipelines(): Promise<void> {
   const account = await triply.getAccount(accountName);
-  const personenthesaurusAccount = await triply.getAccount(
-    personenthesaurusAccountName,
-  );
 
   // Get the datasets
   let constructThesaurusDataset: Dataset;
@@ -82,50 +78,50 @@ async function runPipelines(): Promise<void> {
 
   // Get the queries
   const wikidata = await (
-    await personenthesaurusAccount.getQuery("muziekweb-wikidata-fix")
+    await account.getQuery("muziekweb-wikidata-fix")
   ).useVersion("latest");
   const ptcallSigns = await (
-    await personenthesaurusAccount.getQuery("pt-callSigns")
+    await account.getQuery("pt-callSigns")
   ).useVersion("latest");
   const ptRelations = await (
-    await personenthesaurusAccount.getQuery("pt-relations")
-  ).useVersion(17);
+    await account.getQuery("pt-relations")
+  ).useVersion("latest");
   const thesaurusCore = await (
-    await personenthesaurusAccount.getQuery("thesaurus-core")
-  ).useVersion(20);
+    await account.getQuery("thesaurus-core")
+  ).useVersion("latest");
   const thesaurusRemaining = await (
-    await personenthesaurusAccount.getQuery("thesaurus-remaining")
-  ).useVersion(52);
+    await account.getQuery("thesaurus-remaining")
+  ).useVersion("latest");
   const thesaurusVerrijking = await (
-    await personenthesaurusAccount.getQuery("thesaurus-verrijking")
+    await account.getQuery("thesaurus-verrijking")
   ).useVersion("latest");
 
   console.info("Delete existing graphs");
-  await deleteGraph(constructThesaurusDataset, verrijkingGraphName);
-  await deleteGraph(constructThesaurusDataset, relatiesGraphName);
+  // await deleteGraph(constructThesaurusDataset, verrijkingGraphName);
+  // await deleteGraph(constructThesaurusDataset, relatiesGraphName);
   await deleteGraph(constructThesaurusDataset, coreGraphName);
   await deleteGraph(thesaurusDataset, coreGraphName);
   await deleteGraph(constructThesaurusDataset, remainingGraphName);
   await deleteGraph(thesaurusDataset, remainingGraphName);
   await deleteGraph(thesaurusDataset, thesaurusVerrijkingGraphName);
 
-  console.info("Verrijkingen: muziekweb-wikidata-fix, pt-callSigns");
-  await runPipeline(
-    account,
-    [wikidata, ptcallSigns],
-    constructThesaurusDataset,
-    constructThesaurusDataset,
-    verrijkingGraphName,
-  );
+  // console.info("Verrijkingen: muziekweb-wikidata-fix, pt-callSigns");
+  // await runPipeline(
+  //   account,
+  //   [wikidata, ptcallSigns],
+  //   constructThesaurusDataset,
+  //   constructThesaurusDataset,
+  //   verrijkingGraphName
+  // );
 
-  console.info("Relaties: pt-relations");
-  await runPipeline(
-    account,
-    [ptRelations],
-    constructThesaurusDataset,
-    constructThesaurusDataset,
-    relatiesGraphName,
-  );
+  // console.info("Relaties: pt-relations");
+  // await runPipeline(
+  //   account,
+  //   [ptRelations],
+  //   constructThesaurusDataset,
+  //   constructThesaurusDataset,
+  //   relatiesGraphName
+  // );
 
   console.info("Thesaurus Core => Thesaurus && Construct Thesaurus");
   await runPipeline(

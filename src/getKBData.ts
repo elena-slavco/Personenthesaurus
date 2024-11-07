@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://data.bibliotheken.nl/sparql";
 const accountName = "PT";
-const datasetName = "Construct-Thesaurus";
+const datasetName = "KB";
 
 // Define the SPARQL query
 const sparqlQuery = `
@@ -110,7 +110,7 @@ async function fetchData() {
                 console.info("Uploading graph to TriplyDB...");
                 await dataset.importFromStore(tempGraph, {
                   defaultGraphName:
-                    "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/kb",
+                    "https://podiumkunst.triply.cc/Personenthesaurus/KB/graphs/kb",
                   mergeGraphs: true,
                 });
                 console.info("Done uploading graph to TriplyDB");
