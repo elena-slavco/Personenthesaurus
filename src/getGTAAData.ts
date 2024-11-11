@@ -5,8 +5,10 @@ import dotenv from "dotenv";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://gtaa.apis.beeldengeluid.nl/sparql";
-const accountName = "PT";
+const accountName = "Personenthesaurus-Acceptance";
 const datasetName = "Construct-Thesaurus";
+const graphName =
+  "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/gtaa";
 
 // Define the SPARQL query
 const sparqlQuery = `
@@ -109,8 +111,7 @@ async function fetchData() {
   try {
     console.info("Uploading graph to TriplyDB...");
     await dataset.importFromStore(graph, {
-      defaultGraphName:
-        "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/gtaa",
+      defaultGraphName: graphName,
       overwriteAll: true,
     });
     console.info("Done uploading graph to TriplyDB");

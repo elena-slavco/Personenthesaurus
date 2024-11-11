@@ -6,8 +6,10 @@ import dotenv from "dotenv";
 // Define the SPARQL endpoint and datasetName
 const endpointUrl =
   "https://api.data.muziekweb.nl/datasets/MuziekwebOrganization/Muziekweb/services/Muziekweb/sparql";
-const accountName = "PT";
+const accountName = "Personenthesaurus-Acceptance";
 const datasetName = "Construct-Thesaurus";
+const graphName =
+  "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/muziekweb";
 
 // Define the SPARQL query
 const sparqlQuery = `
@@ -127,8 +129,7 @@ async function fetchData() {
   try {
     console.info("Uploading graph to TriplyDB...");
     await dataset.importFromStore(graph, {
-      defaultGraphName:
-        "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/muziekweb",
+      defaultGraphName: graphName,
       overwriteAll: true,
     });
     console.info("Done uploading graph to TriplyDB");

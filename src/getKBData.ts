@@ -5,36 +5,38 @@ import dotenv from "dotenv";
 
 // Define the SPARQL endpoint and datasetName
 const endpointUrl = "https://data.bibliotheken.nl/sparql";
-const accountName = "PT";
-const datasetName = "KB";
+const accountName = "Personenthesaurus-Acceptance";
+const datasetName = "Construct-Thesaurus";
+const graphName =
+  "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/kb";
 
 // Define the SPARQL query
 const sparqlQuery = `
 prefix kb-dataset: <http://data.bibliotheken.nl/id/dataset/> 
 prefix owl: <http://www.w3.org/2002/07/owl#>
 prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-prefix schema: <http://schema.org/>
+prefix sdo: <http://schema.org/>
 
 construct {
-  ?person a schema:Person ;
-    schema:name ?name ;
-    schema:birthDate ?birthDate, ?birthdate_DBNL ;
-    schema:deathDate ?deathDate ;
-    schema:alternateName ?alternateName .
+  ?person a sdo:Person ;
+    sdo:name ?name ;
+    sdo:birthDate ?birthDate, ?birthdate_DBNL ;
+    sdo:deathDate ?deathDate ;
+    sdo:alternateName ?alternateName .
   } where {
-  ?person schema:mainEntityOfPage/schema:isPartOf kb-dataset:persons ;
-    schema:name ?name .
-  optional { ?person schema:birthDate ?birthDate }
-  optional { ?person schema:deathDate ?deathDate }
-  optional { ?person schema:alternateName ?alternateName }
+  ?person sdo:mainEntityOfPage/sdo:isPartOf kb-dataset:persons ;
+    sdo:name ?name .
+  optional { ?person sdo:birthDate ?birthDate }
+  optional { ?person sdo:deathDate ?deathDate }
+  optional { ?person sdo:alternateName ?alternateName }
   filter exists {
-    ?creativeWork a schema:CreativeWork ;
+    ?creativeWork a sdo:CreativeWork ;
     ?relation ?person
   }
   optional {
     ?dbnlaperson owl:sameAs ?person ;
-      schema:mainEntityOfPage/schema:isPartOf kb-dataset:dbnla ;
-      schema:birthDate ?birthdate_DBNL .
+      sdo:mainEntityOfPage/sdo:isPartOf kb-dataset:dbnla ;
+      sdo:birthDate ?birthdate_DBNL .
   }
   # Ensure that at least one date is bound
   filter(bound(?birthDate) || bound(?birthdate_DBNL))
@@ -109,8 +111,7 @@ async function fetchData() {
               try {
                 console.info("Uploading graph to TriplyDB...");
                 await dataset.importFromStore(tempGraph, {
-                  defaultGraphName:
-                    "https://podiumkunst.triply.cc/Personenthesaurus/KB/graphs/kb",
+                  defaultGraphName: graphName,
                   mergeGraphs: true,
                 });
                 console.info("Done uploading graph to TriplyDB");

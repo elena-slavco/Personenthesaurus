@@ -10,8 +10,8 @@ const thesaurusDatasetName = "Thesaurus";
 
 const graphs =
   "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/";
-// const verrijkingGraphName = graphs + "verrijkingen";
-// const relatiesGraphName = graphs + "relaties";
+const verrijkingGraphName = graphs + "verrijkingen";
+const relatiesGraphName = graphs + "relaties";
 const coreGraphName = graphs + "thesaurus-core";
 const remainingGraphName = graphs + "thesaurus-remaining";
 const thesaurusVerrijkingGraphName = graphs + "thesaurus-verrijking";
@@ -100,29 +100,29 @@ async function runPipelines(): Promise<void> {
   // console.info("Delete existing graphs");
   // await deleteGraph(constructThesaurusDataset, verrijkingGraphName);
   // await deleteGraph(constructThesaurusDataset, relatiesGraphName);
-  await deleteGraph(constructThesaurusDataset, coreGraphName);
-  await deleteGraph(constructThesaurusDataset, remainingGraphName);
+  // await deleteGraph(constructThesaurusDataset, coreGraphName);
+  // await deleteGraph(constructThesaurusDataset, remainingGraphName);
   // await deleteGraph(thesaurusDataset, coreGraphName);
   // await deleteGraph(thesaurusDataset, remainingGraphName);
   // await deleteGraph(thesaurusDataset, thesaurusVerrijkingGraphName);
 
-  // console.info("Verrijkingen: muziekweb-wikidata-fix, pt-callSigns");
-  // await runPipeline(
-  //   account,
-  //   [wikidata, ptcallSigns],
-  //   constructThesaurusDataset,
-  //   constructThesaurusDataset,
-  //   verrijkingGraphName,
-  // );
+  console.info("Verrijkingen: muziekweb-wikidata-fix, pt-callSigns");
+  await runPipeline(
+    account,
+    [wikidata, ptcallSigns],
+    constructThesaurusDataset,
+    constructThesaurusDataset,
+    verrijkingGraphName,
+  );
 
-  // console.info("Relaties: pt-relations");
-  // await runPipeline(
-  //   account,
-  //   [ptRelations],
-  //   constructThesaurusDataset,
-  //   constructThesaurusDataset,
-  //   relatiesGraphName,
-  // );
+  console.info("Relaties: pt-relations");
+  await runPipeline(
+    account,
+    [ptRelations],
+    constructThesaurusDataset,
+    constructThesaurusDataset,
+    relatiesGraphName,
+  );
 
   console.info("Thesaurus Core => Construct Thesaurus");
   await runPipeline(
