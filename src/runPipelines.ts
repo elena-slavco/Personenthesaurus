@@ -1,51 +1,20 @@
 import App from "@triply/triplydb";
 import Dataset from "@triply/triplydb/Dataset.js";
 import dotenv from "dotenv";
-import { graph } from "rdflib";
-
-// Define constants
-const accountName = "Personenthesaurus-Acceptance";
-const constructThesaurusDatasetName = "Construct-Thesaurus";
-const thesaurusDatasetName = "Thesaurus";
-
-const graphs =
-  "https://podiumkunst.triply.cc/Personenthesaurus/Construct-Thesaurus/graphs/";
-const verrijkingGraphName = graphs + "verrijkingen";
-const relatiesGraphName = graphs + "relaties";
-const coreGraphName = graphs + "thesaurus-core";
-const remainingGraphName = graphs + "thesaurus-remaining";
-const thesaurusVerrijkingGraphName = graphs + "thesaurus-verrijking";
+import {
+  accountName,
+  constructThesaurusDatasetName,
+  coreGraphName,
+  relatiesGraphName,
+  remainingGraphName,
+  runPipeline,
+  thesaurusDatasetName,
+  thesaurusVerrijkingGraphName,
+  verrijkingGraphName,
+} from "./helpers.js";
 
 dotenv.config();
 const triply = App.get({ token: process.env.TRIPLYDB_TOKEN });
-
-async function deleteGraph(dataset: any, graphName: string): Promise<void> {
-  try {
-    const graph = await dataset.getGraph(graphName);
-    await graph.delete();
-  } catch (error) {}
-}
-
-async function runPipeline(
-  account: any,
-  queries: any[],
-  sourceDataSet: any,
-  destinationDataSet: any,
-  graphName: string,
-): Promise<void> {
-  try {
-    await account.runPipeline({
-      queries: queries,
-      destination: {
-        dataset: destinationDataSet,
-        graph: graphName,
-      },
-      source: sourceDataSet,
-    });
-  } catch (error) {
-    console.error(`Error running pipeline for graph ${graphName}:`, error);
-  }
-}
 
 async function runPipelines(): Promise<void> {
   const account = await triply.getAccount(accountName);
@@ -96,15 +65,6 @@ async function runPipelines(): Promise<void> {
   const thesaurusVerrijking = await (
     await account.getQuery("thesaurus-verrijking")
   ).useVersion("latest");
-
-  // console.info("Delete existing graphs");
-  // await deleteGraph(constructThesaurusDataset, verrijkingGraphName);
-  // await deleteGraph(constructThesaurusDataset, relatiesGraphName);
-  // await deleteGraph(constructThesaurusDataset, coreGraphName);
-  // await deleteGraph(constructThesaurusDataset, remainingGraphName);
-  // await deleteGraph(thesaurusDataset, coreGraphName);
-  // await deleteGraph(thesaurusDataset, remainingGraphName);
-  // await deleteGraph(thesaurusDataset, thesaurusVerrijkingGraphName);
 
   console.info("Verrijkingen: muziekweb-wikidata-fix, pt-callSigns");
   await runPipeline(
