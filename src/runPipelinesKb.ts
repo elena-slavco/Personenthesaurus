@@ -87,6 +87,13 @@ async function runPipelines(): Promise<void> {
     thesaurusDataset,
     prefLabelsGraphName,
   );
+
+  console.info("Thesaurus: Update services");
+  for await (const service of thesaurusDataset.getServices()) {
+    await service.update({ rollingUpdate: true }).catch((error) => {
+      console.error("Error updating service:", error);
+    });
+  }
 }
 
 // Call the runPipelines function to start the process
