@@ -12,6 +12,7 @@ export const remainingGraphName = graphs + "thesaurus-remaining";
 export const thesaurusVerrijkingGraphName = graphs + "thesaurus-verrijking";
 export const kbGraphName = graphs + "kb";
 export const coreKbGraphName = graphs + "thesaurus-core-kb";
+export const prefLabelsGraphName = graphs + "thesaurus-preflabels";
 
 export async function runPipeline(
   account: any,
