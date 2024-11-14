@@ -11,6 +11,7 @@ import {
   thesaurusDatasetName,
   thesaurusVerrijkingGraphName,
   verrijkingGraphName,
+  prefLabelsGraphName,
 } from "./helpers.js";
 
 dotenv.config();
@@ -65,6 +66,9 @@ async function runPipelines(): Promise<void> {
   const thesaurusVerrijking = await (
     await account.getQuery("thesaurus-verrijking")
   ).useVersion("latest");
+  const prefLabels = await (
+    await account.getQuery("thesaurus-preflabels")
+  ).useVersion("latest");
 
   console.info("Verrijkingen: muziekweb-wikidata-fix, pt-callSigns");
   await runPipeline(
@@ -115,6 +119,15 @@ async function runPipelines(): Promise<void> {
     constructThesaurusDataset,
     thesaurusDataset,
     thesaurusVerrijkingGraphName,
+  );
+
+  console.info("PrefLabels => Thesaurus");
+  await runPipeline(
+    account,
+    [prefLabels],
+    thesaurusDataset,
+    thesaurusDataset,
+    prefLabelsGraphName,
   );
 }
 
