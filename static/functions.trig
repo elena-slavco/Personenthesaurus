@@ -1,0 +1,64 @@
+prefix dct:  <http://purl.org/dc/terms/>
+prefix owl:  <http://www.w3.org/2002/07/owl#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix sh:   <http://www.w3.org/ns/shacl#>
+prefix vann: <http://purl.org/vocab/vann/>
+prefix xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+prefix function:  <https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance/function/>
+prefix decl:      <https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance/declaration/>
+prefix param:     <https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance/parameter/>
+
+<https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance/function> {
+  <https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance/function>
+    a owl:Ontology;
+    dct:creator <https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance>;
+    dct:description "This dataset contains SPARQL Functions that can be used to generate the Personenthesaurus."@en;
+    dct:publisher <https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance>;
+    dct:title "SPARQL Functions for the Personenthesaurus"@en;
+    sh:declare decl:function;
+    vann:preferredNamespacePrefix 'function';
+    vann:preferredNamespaceUri 'https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance/function/'.
+  decl:function
+    a sh:PrefixDeclaration;
+    sh:namespace 'https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance/function/'^^xsd:anyURI;
+    sh:prefix 'function'.
+
+  function:normalize
+    a sh:SPARQLFunction;
+    rdfs:isDefinedBy <https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance/function>;
+    sh:parameter param:input_name;
+    sh:prefixes <https://podiumkunst.triply.cc/Personenthesaurus/Personenthesauru-Acceptance/function>;
+    sh:returnType xsd:string;
+    sh:select '''
+      select $return {
+        # First reformat names from "Last, First" to "First Last"
+        bind(replace($name, '^(.*),\\s*(.*)$', '$2 $1') as ?formattedName)
+
+        # Convert to lowercase and remove diacritics
+        bind(replace(replace(replace(replace(replace(replace(replace(
+                                                            lcase(str(?formattedName)), # Convert to string to remove language tags
+                                                            "[áàâäãå]", "a"),
+                                                    "[éèêë]", "e"),
+                                            "[íìîï]", "i"),
+                                    "[óòôöõ]", "o"),
+                            "[úùûü]", "u"),
+                    "[ç]", "c"),
+            "[ñ]", "n") as ?diacriticsRemoved)
+
+        # Replace ß with ss
+        bind(replace(?diacriticsRemoved, "ß", "ss") as ?ssReplaced)
+
+        # Remove any characters that aren't letters
+        bind(replace(?ssReplaced, "[^a-z]", "") as $return)
+
+        # Ensure normalized name is not empty
+        filter (str($return) != "")
+      }'''.
+
+  param:input_name
+    a sh:Parameter;
+    sh:datatype xsd:string;
+    sh:order 1;
+    sh:path param:name.
+}
