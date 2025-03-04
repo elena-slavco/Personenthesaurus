@@ -2,7 +2,7 @@
   "author": "Triply <info@triply.cc>",
   "type": "module",
   "dependencies": {
-    "@triplyetl/etl": "^4.8.8",
+    "@triplyetl/etl": "latest",
     "axios": "^1.7.5",
     "date-fns": "^3.6.0",
     "isodate": "^0.1.4",
